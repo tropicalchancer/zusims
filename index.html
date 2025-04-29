@@ -26,6 +26,7 @@
         // Import required modules
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'https://unpkg.com/three@latest/examples/jsm/loaders/GLTFLoader.js';
 
         // Scene setup
         const scene = new THREE.Scene();
@@ -43,6 +44,34 @@
         directionalLight.position.set(5, 10, 2);
         directionalLight.castShadow = true;
         scene.add(directionalLight);
+
+        // ---------- LOAD GEODESIC DOME ----------
+        const loader = new GLTFLoader();
+        console.log('Attempting to load dome from: models/geodesic_dome.glb');
+        loader.load(
+            'models/geodesic_dome.glb',
+            (gltf) => {
+                console.log('Dome loaded successfully!');
+                const dome = gltf.scene;
+                dome.scale.set(3, 3, 3);      // adjust size
+                dome.position.set(0, 0, -20); // 20 m in front of player
+                dome.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(dome);
+                console.log('Dome added to scene at position:', dome.position);
+            },
+            (xhr) => {
+                console.log('Loading progress:', (xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+            (err) => {
+                console.error('GLB load error:', err);
+                console.error('Please check that models/geodesic_dome.glb exists in the correct location');
+            }
+        );
 
         // Ground plane
         const groundGeometry = new THREE.PlaneGeometry(50, 50);
