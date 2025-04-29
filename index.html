@@ -31,7 +31,7 @@
 
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
@@ -64,7 +64,7 @@
         scene.add(directionalLight);
 
         // Ground plane
-        const groundGeometry = new THREE.PlaneGeometry(200, 200);
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
         const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
@@ -85,8 +85,26 @@
 
         const matrix = new THREE.Matrix4();
         for (let i = 0; i < treeCount; i++) {
-            const x = (Math.random() - 0.5) * 180;
-            const z = (Math.random() - 0.5) * 180;
+            let x, z;
+            // Distribute trees along the edges
+            if (i < treeCount / 4) {
+                // Top edge
+                x = (Math.random() - 0.5) * 90;
+                z = -45 + (Math.random() - 0.5) * 10;
+            } else if (i < treeCount / 2) {
+                // Bottom edge
+                x = (Math.random() - 0.5) * 90;
+                z = 45 + (Math.random() - 0.5) * 10;
+            } else if (i < 3 * treeCount / 4) {
+                // Left edge
+                x = -45 + (Math.random() - 0.5) * 10;
+                z = (Math.random() - 0.5) * 90;
+            } else {
+                // Right edge
+                x = 45 + (Math.random() - 0.5) * 10;
+                z = (Math.random() - 0.5) * 90;
+            }
+            
             matrix.setPosition(x, 1, z);
             trunkMesh.setMatrixAt(i, matrix);
             matrix.setPosition(x, 3, z);
@@ -104,7 +122,7 @@
                 console.log('Dome loaded successfully!');
                 const dome = gltf.scene;
                 dome.scale.set(0.5, 0.5, 0.5);
-                dome.position.set(0, 0, -20);
+                dome.position.set(40, 0, 40);  // Moved to back-right corner
                 dome.traverse((child) => {
                     if (child.isMesh) {
                         child.castShadow = true;
@@ -131,27 +149,66 @@
         player.castShadow = true;
         scene.add(player);
 
-        // Portal setup
-        const portalGeometry = new THREE.TorusGeometry(3, 0.4, 16, 32, Math.PI);
-        const portalMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            transparent: true,
-            opacity: 0.5
-        });
-        const portal = new THREE.Mesh(portalGeometry, portalMaterial);
-        portal.position.set(0, 1.0, 10);
-        portal.rotation.y = Math.PI;
-        scene.add(portal);
+        // Portal specifications
+        const PORTALS = [
+            { x: -15, color: 0x00bfff, text: 'CYAN PORTAL',   url: 'https://cyan.example'   },
+            { x: -5,  color: 0xff00ff, text: 'PINK PORTAL',   url: 'https://pink.example'   },
+            { x:  5,  color: 0x00ff00, text: 'GREEN PORTAL',  url: 'https://green.example'  },
+            { x:  15, color: 0xffa500, text: 'ORANGE PORTAL', url: 'https://orange.example' }
+        ];
 
-        // Portal trigger volume
-        const trigger = new THREE.Box3();
-        const portalBounds = new THREE.Box3().setFromCenterAndSize(
-            new THREE.Vector3(0, 1.0, 10),
-            new THREE.Vector3(5, 5, 2)
-        );
-        let portalUsed = false;
+        // Portal creation function
+        function createPortal(spec) {
+            // Create portal arch
+            const portalGeometry = new THREE.TorusGeometry(3, 0.4, 16, 32, Math.PI);
+            const portalMaterial = new THREE.MeshBasicMaterial({
+                color: spec.color,
+                transparent: true,
+                opacity: 0.5
+            });
+            const portal = new THREE.Mesh(portalGeometry, portalMaterial);
+            portal.position.set(spec.x, 1.5, -30);
+            portal.rotation.y = Math.PI;
+            scene.add(portal);
 
-        // Portal label
+            // Create portal membrane
+            const membraneGeometry = new THREE.PlaneGeometry(5.5, 3);
+            const membraneMaterial = new THREE.MeshBasicMaterial({
+                color: spec.color,
+                transparent: true,
+                opacity: 0.25,
+                side: THREE.DoubleSide
+            });
+            const membrane = new THREE.Mesh(membraneGeometry, membraneMaterial);
+            membrane.position.set(spec.x, 1.5, -30 + 0.01);
+            membrane.rotation.y = Math.PI;
+            scene.add(membrane);
+
+            // Create portal label
+            const label = createTextSprite(spec.text);
+            label.position.set(spec.x, 4.0, -30);
+            scene.add(label);
+
+            // Create trigger volume
+            const box = new THREE.Box3().setFromCenterAndSize(
+                new THREE.Vector3(spec.x, 1.5, -30),
+                new THREE.Vector3(5, 5, 2)
+            );
+
+            return {
+                mesh: portal,
+                membrane: membrane,
+                label: label,
+                box: box,
+                url: spec.url,
+                used: false
+            };
+        }
+
+        // Create all portals
+        const portals = PORTALS.map(createPortal);
+
+        // Portal label creation function
         function createTextSprite(text) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
@@ -172,12 +229,8 @@
             return sprite;
         }
 
-        const portalLabel = createTextSprite('PORTAL');
-        portalLabel.position.set(0, 2.8, 10);
-        scene.add(portalLabel);
-
         // Grid helper
-        const gridHelper = new THREE.GridHelper(200, 200);
+        const gridHelper = new THREE.GridHelper(100, 100);
         scene.add(gridHelper);
 
         // Movement variables
@@ -191,15 +244,16 @@
         const pivot = new THREE.Object3D();
         scene.add(pivot);
         pivot.add(camera);
-        camera.position.set(0, 3, 4);
+        camera.position.set(0, 5, 10);
 
         // OrbitControls setup
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enablePan = false;
         controls.enableZoom = true;
         controls.minDistance = 4;
-        controls.maxDistance = 12;
+        controls.maxDistance = 50;
         controls.maxPolarAngle = Math.PI * 0.49;
+        controls.target.copy(player.position);
 
         // Input handling
         window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
@@ -245,7 +299,11 @@
 
             if (moveDirection.length() > 0) {
                 moveDirection.normalize();
-                player.position.add(moveDirection.multiplyScalar(moveSpeed * deltaTime));
+                const newPosition = player.position.clone().add(moveDirection.multiplyScalar(moveSpeed * deltaTime));
+                
+                // Only restrict Y movement, allow free X/Z movement
+                player.position.x = newPosition.x;
+                player.position.z = newPosition.z;
             }
 
             velocityY -= 9.8 * deltaTime;
@@ -256,14 +314,19 @@
                 isGrounded = true;
             }
 
-            if (!portalUsed) {
-                trigger.setFromObject(player);
-                if (trigger.intersectsBox(portalBounds)) {
-                    portalUsed = true;
-                    window.open('https://shipkimchi.xyz/', '_blank');
-                    console.log('Portal triggered!');
+            // Portal collision detection and label orientation
+            const playerBox = new THREE.Box3().setFromObject(player);
+            portals.forEach(portal => {
+                // Update label orientation to face camera
+                portal.label.lookAt(camera.position);
+                
+                // Check for portal collision
+                if (!portal.used && playerBox.intersectsBox(portal.box)) {
+                    portal.used = true;
+                    window.open(portal.url, '_blank');
+                    console.log('Entered', portal.label.material.map.image.textContent);
                 }
-            }
+            });
 
             pivot.position.copy(player.position);
             controls.target.copy(player.position);

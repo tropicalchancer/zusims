@@ -14,6 +14,7 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 - Optional grid helper toggled with 'G' key
 - Geodesic dome model loaded via GLTFLoader, positioned 20 units ahead of player
 - Scattered tree instances for environment decoration
+- Four aligned colored portals with membranes and always-facing labels
 
 ### Technical Implementation Details
 - Uses ES6 modules with CDN imports via importmap
@@ -24,6 +25,7 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 - Physics-based movement and jumping system
 - Local file serving required (use `npx serve` for model loading)
 - InstancedMesh for efficient tree rendering
+- Portal system with aligned positions, membranes, and billboarded labels
 
 ### Key Features
 1. **Player Character**
@@ -47,14 +49,31 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
    - Casts and receives shadows
    - Loaded asynchronously with progress tracking
 
-4. **Movement System**
+4. **Portal System**
+   - Four aligned colored portals with unique destinations
+   - Each portal consists of:
+     - Half-torus arch (radius 3, tube 0.4)
+     - Transparent colored material (opacity 0.5)
+     - Membrane plane (5.5 × 3) with matching color (opacity 0.25)
+     - Canvas-based text label that always faces camera
+     - Box3 trigger volume for collision detection
+   - Portal positions (all at z = -60):
+     - Cyan Portal: x = -30
+     - Pink Portal: x = -10
+     - Green Portal: x = 10
+     - Orange Portal: x = 30
+   - Each portal opens a unique URL in a new tab when triggered
+   - One-time use per portal (tracked with used flag)
+   - Labels automatically orient to face camera each frame
+
+5. **Movement System**
    - WASD keyboard controls
    - Camera-relative movement
    - Frame-rate independent movement (5 units/second)
    - Space bar jumping with gravity
    - Ground collision detection
 
-5. **Camera System**
+6. **Camera System**
    - Orbit-style follow camera using OrbitControls
    - Camera mounted on pivot object that follows player
    - Configurable distance limits (4-12 units)
@@ -63,13 +82,13 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
    - Prevents camera from going under ground plane
    - Smooth camera following with automatic target updates
 
-6. **Lighting System**
+7. **Lighting System**
    - Dynamic sky-based lighting
    - Soft white ambient light (intensity: 0.4)
    - Directional light positioned from sun vector
    - Shadow casting enabled for all relevant objects
 
-7. **Interactive Features**
+8. **Interactive Features**
    - WASD movement controls
    - Space bar jumping
    - Grid helper toggle with 'G' key
@@ -90,4 +109,7 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 - Efficient pivot-based camera following
 - Proper model loading with error handling and debugging
 - InstancedMesh for efficient tree rendering
-- Dynamic sky system for realistic lighting 
+- Dynamic sky system for realistic lighting
+- Reusable portal creation system with configurable properties
+- Billboarded labels for optimal readability
+- Double-sided portal membranes for proper visibility 
