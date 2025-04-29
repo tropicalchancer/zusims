@@ -151,53 +151,39 @@
 
         // Portal specifications
         const PORTALS = [
-            { x: -15, color: 0x00bfff, text: 'CYAN PORTAL',   url: 'https://cyan.example'   },
-            { x: -5,  color: 0xff00ff, text: 'PINK PORTAL',   url: 'https://pink.example'   },
-            { x:  5,  color: 0x00ff00, text: 'GREEN PORTAL',  url: 'https://green.example'  },
-            { x:  15, color: 0xffa500, text: 'ORANGE PORTAL', url: 'https://orange.example' }
+            { x: -15, color: 0x00bfff, text: 'kimchi',      url: 'https://shipkimchi.xyz/'    },
+            { x: -5,  color: 0xff00ff, text: 'zubenefits',   url: 'https://vibemeta.example' },
+            { x:  5,  color: 0x00ff00, text: 'zubazaar',       url: 'https://vibeverse.example'},
+            { x:  15, color: 0xffa500, text: 'netsolist',            url: 'https://netsovillages.com/'     }
         ];
 
         // Portal creation function
         function createPortal(spec) {
-            // Create portal arch
-            const portalGeometry = new THREE.TorusGeometry(3, 0.4, 16, 32, Math.PI);
+            // Create portal arch - increased size
+            const portalGeometry = new THREE.TorusGeometry(4, 0.4, 16, 32, Math.PI);
             const portalMaterial = new THREE.MeshBasicMaterial({
                 color: spec.color,
                 transparent: true,
                 opacity: 0.5
             });
             const portal = new THREE.Mesh(portalGeometry, portalMaterial);
-            portal.position.set(spec.x, 1.5, -30);
+            portal.position.set(spec.x, 0.5, -30);  // Lowered from 2 to 0.5
             portal.rotation.y = Math.PI;
             scene.add(portal);
 
-            // Create portal membrane
-            const membraneGeometry = new THREE.PlaneGeometry(5.5, 3);
-            const membraneMaterial = new THREE.MeshBasicMaterial({
-                color: spec.color,
-                transparent: true,
-                opacity: 0.25,
-                side: THREE.DoubleSide
-            });
-            const membrane = new THREE.Mesh(membraneGeometry, membraneMaterial);
-            membrane.position.set(spec.x, 1.5, -30 + 0.01);
-            membrane.rotation.y = Math.PI;
-            scene.add(membrane);
-
-            // Create portal label
-            const label = createTextSprite(spec.text);
-            label.position.set(spec.x, 4.0, -30);
+            // Create portal label - positioned higher
+            const label = createTextSprite(spec.text, spec.color);
+            label.position.set(spec.x, 6.5, -30);  // Raised from 5 to 6.5
             scene.add(label);
 
-            // Create trigger volume
+            // Create larger trigger volume
             const box = new THREE.Box3().setFromCenterAndSize(
-                new THREE.Vector3(spec.x, 1.5, -30),
-                new THREE.Vector3(5, 5, 2)
+                new THREE.Vector3(spec.x, 0.5, -30),  // Lowered from 2 to 0.5
+                new THREE.Vector3(7, 8, 2)
             );
 
             return {
                 mesh: portal,
-                membrane: membrane,
                 label: label,
                 box: box,
                 url: spec.url,
@@ -209,15 +195,15 @@
         const portals = PORTALS.map(createPortal);
 
         // Portal label creation function
-        function createTextSprite(text) {
+        function createTextSprite(text, color) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 256;
-            canvas.height = 64;
-            context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            canvas.width = 512;  // Increased from 256
+            canvas.height = 128;  // Increased from 64
+            context.fillStyle = 'rgba(0, 0, 0, 0)';  // Made background transparent
             context.fillRect(0, 0, canvas.width, canvas.height);
-            context.font = 'bold 48px Arial';
-            context.fillStyle = 'white';
+            context.font = 'bold 72px Arial';  // Increased font size
+            context.fillStyle = '#' + color.toString(16).padStart(6, '0');  // Convert portal color to CSS color
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -225,7 +211,7 @@
             const texture = new THREE.CanvasTexture(canvas);
             const material = new THREE.SpriteMaterial({ map: texture });
             const sprite = new THREE.Sprite(material);
-            sprite.scale.set(4, 1, 1);
+            sprite.scale.set(8, 2, 1);  // Increased scale
             return sprite;
         }
 
@@ -324,7 +310,7 @@
                 if (!portal.used && playerBox.intersectsBox(portal.box)) {
                     portal.used = true;
                     window.open(portal.url, '_blank');
-                    console.log('Entered', portal.label.material.map.image.textContent);
+                    console.log('Entered', portal.url);
                 }
             });
 
