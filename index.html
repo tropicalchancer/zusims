@@ -98,7 +98,7 @@
         });
         const portal = new THREE.Mesh(portalGeometry, portalMaterial);
         portal.position.set(0, 1.5, 10);
-        portal.rotation.x = Math.PI / 2;
+        portal.rotation.y = Math.PI;  // Make it face the player
         scene.add(portal);
 
         // Portal trigger volume
