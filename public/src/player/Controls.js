@@ -10,6 +10,17 @@ export function useControls(camera, player) {
     const keys = {};
     const moveSpeed = 5;
     let isPointerLocked = false;
+    
+    // Camera rotation variables
+    let yaw = 0;
+    let pitch = 0;
+    const RS = 1.5; // rad/s
+    
+    // Create pivot for camera rotation
+    const pivot = new THREE.Object3D();
+    pivot.add(camera);
+    player.mesh.add(pivot);
+    pivot.position.set(0, 1.6, 0); // Position camera at eye level
 
     function keyHandler(e) {
         keys[e.key.toLowerCase()] = e.type === 'keydown';
@@ -38,10 +49,29 @@ export function useControls(camera, player) {
 
     return {
         /**
-         * Updates player movement based on input
+         * Updates player movement and camera rotation based on input
          * @param {number} deltaTime - Time since last frame
          */
         update(deltaTime) {
+            // Handle camera rotation with arrow keys
+            if (keys['arrowleft']) yaw += RS * deltaTime;
+            if (keys['arrowright']) yaw -= RS * deltaTime;
+            if (keys['arrowup']) pitch += RS * deltaTime;
+            if (keys['arrowdown']) pitch -= RS * deltaTime;
+            
+            // Clamp pitch to prevent camera flipping
+            pitch = THREE.MathUtils.clamp(
+                pitch,
+                -Math.PI/2 + 0.1,
+                Math.PI/2 - 0.1
+            );
+            
+            // Apply rotation to pivot
+            const q = new THREE.Quaternion()
+                .setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+            pivot.quaternion.copy(q);
+
+            // Handle WASD movement
             const moveDirection = new THREE.Vector3();
             const cameraDirection = new THREE.Vector3();
             camera.getWorldDirection(cameraDirection);
