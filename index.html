@@ -53,7 +53,7 @@
             (gltf) => {
                 console.log('Dome loaded successfully!');
                 const dome = gltf.scene;
-                dome.scale.set(3, 3, 3);      // adjust size
+                dome.scale.set(0.5, 0.5, 0.5);      // adjust size
                 dome.position.set(0, 0, -20); // 20 m in front of player
                 dome.traverse((child) => {
                     if (child.isMesh) {
@@ -88,6 +88,51 @@
         player.position.set(0, 0.5, 0);
         player.castShadow = true;
         scene.add(player);
+
+        // Portal setup
+        const portalGeometry = new THREE.TorusGeometry(3, 0.4, 16, 32, Math.PI);
+        const portalMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.5
+        });
+        const portal = new THREE.Mesh(portalGeometry, portalMaterial);
+        portal.position.set(0, 1.5, 10);
+        portal.rotation.x = Math.PI / 2;
+        scene.add(portal);
+
+        // Portal trigger volume
+        const trigger = new THREE.Box3();
+        const portalBounds = new THREE.Box3().setFromCenterAndSize(
+            new THREE.Vector3(0, 1.5, 10),
+            new THREE.Vector3(5, 5, 2)
+        );
+        let portalUsed = false;
+
+        // Portal label
+        function createTextSprite(text) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+            context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.font = 'bold 48px Arial';
+            context.fillStyle = 'white';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(4, 1, 1);
+            return sprite;
+        }
+
+        const portalLabel = createTextSprite('PORTAL');
+        portalLabel.position.set(0, 4, 10);
+        scene.add(portalLabel);
 
         // Grid helper (optional)
         const gridHelper = new THREE.GridHelper(50, 50);
@@ -172,6 +217,16 @@
                 player.position.y = 0.5;
                 velocityY = 0;
                 isGrounded = true;
+            }
+
+            // Portal trigger check
+            if (!portalUsed) {
+                trigger.setFromObject(player);
+                if (trigger.intersectsBox(portalBounds)) {
+                    portalUsed = true;
+                    window.open('https://shipkimchi.xyz/', '_blank');
+                    console.log('Portal triggered!');
+                }
             }
 
             // Update camera pivot and controls
