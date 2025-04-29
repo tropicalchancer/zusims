@@ -52,19 +52,20 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 4. **Portal System**
    - Four aligned colored portals with unique destinations
    - Each portal consists of:
-     - Half-torus arch (radius 3, tube 0.4)
+     - Half-torus arch (radius 4, tube 0.4)
      - Transparent colored material (opacity 0.5)
-     - Membrane plane (5.5 × 3) with matching color (opacity 0.25)
-     - Canvas-based text label that always faces camera
+     - Canvas-based text label that always faces camera (positioned at y=6.5)
      - Box3 trigger volume for collision detection
-   - Portal positions (all at z = -60):
-     - Cyan Portal: x = -30
-     - Pink Portal: x = -10
-     - Green Portal: x = 10
-     - Orange Portal: x = 30
-   - Each portal opens a unique URL in a new tab when triggered
+   - Portal positions (all at z = -30):
+     - Light Blue Portal (kimchi): x = -15, URL: https://shipkimchi.xyz/
+     - Pink Portal (zubenefits): x = -5, URL: https://vibemeta.example
+     - Green Portal (zubazaar): x = 5, URL: https://vibeverse.example
+     - Orange Portal (netsolist): x = 15, URL: https://netsovillages.com/
+   - Each portal opens its URL in a new tab when triggered
    - One-time use per portal (tracked with used flag)
    - Labels automatically orient to face camera each frame
+   - Portal arches positioned close to ground (y=0.5)
+   - Text colors match their respective portal colors
 
 5. **Movement System**
    - WASD keyboard controls
