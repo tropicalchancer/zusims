@@ -6,21 +6,24 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 ### Scene Components
 - WebGL renderer with fullscreen canvas and window resize handling
 - PerspectiveCamera (60° FOV) with orbit-style follow behavior
-- Ground plane (50x50 green "grass" surface)
+- Large ground plane (200x200 green "grass" surface)
 - Player character (capsule geometry) with WASD movement
+- Dynamic sky system with configurable sun position
 - Lighting system with ambient and directional lights
 - Shadow mapping enabled for realistic shadows
 - Optional grid helper toggled with 'G' key
 - Geodesic dome model loaded via GLTFLoader, positioned 20 units ahead of player
+- Scattered tree instances for environment decoration
 
 ### Technical Implementation Details
 - Uses ES6 modules with CDN imports via importmap
-- Three.js, OrbitControls, and GLTFLoader loaded from unpkg.com
+- Three.js, OrbitControls, GLTFLoader, and Sky loaded from unpkg.com
 - Responsive design with proper viewport handling
 - Implements requestAnimationFrame loop with deltaTime
 - Clean CSS setup for fullscreen canvas
 - Physics-based movement and jumping system
 - Local file serving required (use `npx serve` for model loading)
+- InstancedMesh for efficient tree rendering
 
 ### Key Features
 1. **Player Character**
@@ -29,21 +32,29 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
    - Positioned at y=0.5 on ground plane
    - Casts shadows
 
-2. **Geodesic Dome**
+2. **Environment**
+   - 200x200 ground plane with MeshPhongMaterial
+   - Dynamic sky system scaled to 1000 units
+   - Sun positioned at 45° elevation, 180° azimuth
+   - 50 procedurally placed trees using InstancedMesh
+   - Trees consist of trunk (cylinder) and foliage (cone)
+   - Trees cast shadows and are randomly distributed
+
+3. **Geodesic Dome**
    - Loaded from models/geodesic_dome.glb
-   - Scaled to 3x original size
+   - Scaled to 0.5x original size
    - Positioned at (0, 0, -20)
    - Casts and receives shadows
    - Loaded asynchronously with progress tracking
 
-3. **Movement System**
+4. **Movement System**
    - WASD keyboard controls
    - Camera-relative movement
    - Frame-rate independent movement (5 units/second)
    - Space bar jumping with gravity
    - Ground collision detection
 
-4. **Camera System**
+5. **Camera System**
    - Orbit-style follow camera using OrbitControls
    - Camera mounted on pivot object that follows player
    - Configurable distance limits (4-12 units)
@@ -52,18 +63,20 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
    - Prevents camera from going under ground plane
    - Smooth camera following with automatic target updates
 
-5. **Lighting System**
-   - Soft white ambient light (intensity: 0.5)
-   - White directional light at (5, 10, 2)
-   - Shadow casting enabled
+6. **Lighting System**
+   - Dynamic sky-based lighting
+   - Soft white ambient light (intensity: 0.4)
+   - Directional light positioned from sun vector
+   - Shadow casting enabled for all relevant objects
 
-6. **Interactive Features**
+7. **Interactive Features**
    - WASD movement controls
    - Space bar jumping
    - Grid helper toggle with 'G' key
    - Mouse-controlled camera orbit
    - Mouse wheel zoom
    - Pointer lock mode with 'L' key
+   - Portal interaction with URL opening
 
 ### Best Practices Implemented
 - Proper cleanup and event handling
@@ -75,4 +88,6 @@ The main Three.js scene is implemented in [index.html](mdc:index.html). This fil
 - Smooth camera interpolation
 - Proper camera constraints and limits
 - Efficient pivot-based camera following
-- Proper model loading with error handling and debugging 
+- Proper model loading with error handling and debugging
+- InstancedMesh for efficient tree rendering
+- Dynamic sky system for realistic lighting 
