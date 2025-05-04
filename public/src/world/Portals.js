@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 
 const PORTALS = [
-    { x: -15, color: 0x00bfff, text: 'kimchi', url: 'https://shipkimchi.xyz/' },
-    { x: -5, color: 0xff00ff, text: 'zubenefits', url: 'https://vibemeta.example' },
-    { x: 5, color: 0x00ff00, text: 'zubazaar', url: 'https://vibeverse.example' },
-    { x: 15, color: 0xffa500, text: 'netsolist', url: 'https://netsovillages.com/' }
+    { x: -45, color: 0x8e44ad, text: 'quantumflux', url: 'https://quantumflux.example' },
+    { x: -30, color: 0x00bfff, text: 'kimchi', url: 'https://shipkimchi.xyz/' },
+    { x: -15, color: 0xff00ff, text: 'zubenefits', url: 'https://vibemeta.example' },
+    { x: 0, color: 0xe67e22, text: 'pixelpulse', url: 'https://pixelpulse.example' },
+    { x: 15, color: 0x00ff00, text: 'zubazaar', url: 'https://vibeverse.example' },
+    { x: 30, color: 0xffa500, text: 'netsolist', url: 'https://netsovillages.com/' },
+    { x: 45, color: 0x16a085, text: 'neonforge', url: 'https://neonforge.example' }
 ];
 
 /**
